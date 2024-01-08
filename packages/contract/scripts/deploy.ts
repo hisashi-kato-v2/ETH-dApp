@@ -1,27 +1,26 @@
 import { ethers } from "hardhat";
 
-async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const unlockTime = currentTimestampInSeconds + 60;
+const main = async () => {
+  const [deployer] = await ethers.getSigners();
+  const accountBalance = await ethers.provider.getBalance(deployer.address);
+  const waveContractFactory = await ethers.getContractFactory('WavePortal');
+  const waveContract = await waveContractFactory.deploy();
+  // const wavePortal = await waveContract.deployed()
 
-  const lockedAmount = ethers.parseEther("0.001");
+  console.log('Deploying contracts with account: ', deployer.address);
+  console.log('Account balance: ', accountBalance.toString());
+  console.log('Contract deployed to: ', waveContract.getAddress());
+  console.log('Contract deployed by: ', deployer.address);
+};
 
-  const lock = await ethers.deployContract("Lock", [unlockTime], {
-    value: lockedAmount,
-  });
+const runMain = async () => {
+  try {
+    await main();
+    process.exit(0);
+  } catch (error) {
+    console.error(error);
+    process.exit(1);
+  }
+};
 
-  await lock.waitForDeployment();
-
-  console.log(
-    `Lock with ${ethers.formatEther(
-      lockedAmount
-    )}ETH and unlock timestamp ${unlockTime} deployed to ${lock.target}`
-  );
-}
-
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+runMain();
